@@ -105,6 +105,80 @@ TEST(HashMapTest, CountNumberOfStrings)
     }
 }
 
+TEST(HashMapTest, CustomHashFunction)
+{
+    struct SimpleHasher
+    {
+        std::size_t operator()(const std::string &x) const
+        {
+            size_t hash = 0;
+            for (auto ch : x)
+                hash += ch;
+            return hash;
+        }
+    };
+
+    HashMap<std::string, std::string, SimpleHasher> hm;
+    ASSERT_EQ(hm.size(), 0);
+    ASSERT_EQ(hm.get("abc"), std::nullopt);
+
+    hm.insert("abcd", "Value 1");
+    hm.insert("abdc", "Value 2");
+    hm.insert("acbd", "Some other value");
+    hm.insert("acdb", "Value 3");
+    hm.insert("adbc", "Val");
+    hm.insert("adcb", "X");
+    ASSERT_EQ(hm.size(), 6);
+
+    hm.insert("bacd", "S");
+    hm.insert("badc", "");
+    hm.insert("cabd", "jhik");
+    hm.insert("cadb", "adfa");
+    hm.insert("dabc", "12345");
+    hm.insert("dacb", "171");
+    ASSERT_EQ(hm.size(), 12);
+
+    ASSERT_EQ(hm.get("abcd"), "Value 1");
+    ASSERT_EQ(hm.get("abdc"), "Value 2");
+    ASSERT_EQ(hm.get("acbd"), "Some other value");
+    ASSERT_EQ(hm.get("acdb"), "Value 3");
+    ASSERT_EQ(hm.get("adbc"), "Val");
+    ASSERT_EQ(hm.get("adcb"), "X");
+    ASSERT_EQ(hm.get("bacd"), "S");
+    ASSERT_EQ(hm.get("badc"), "");
+    ASSERT_EQ(hm.get("cabd"), "jhik");
+    ASSERT_EQ(hm.get("cadb"), "adfa");
+    ASSERT_EQ(hm.get("dabc"), "12345");
+    ASSERT_EQ(hm.get("dacb"), "171");
+
+    hm.insert("abcd", "Value 9");
+    hm.insert("abdc", "Value 10");
+    hm.insert("acbd", "");
+    hm.insert("acdb", "xyz123");
+    hm.insert("adbc", "abcdef");
+    hm.insert("adcb", "val");
+    hm.insert("bacd", "S");
+    hm.insert("badc", "");
+    hm.insert("cabd", "kks");
+    hm.insert("cadb", "asdfadfaf");
+    hm.insert("dabc", "122222");
+    hm.insert("dacb", "171");
+    ASSERT_EQ(hm.size(), 12);
+
+    ASSERT_EQ(hm.get("abcd"), "Value 9");
+    ASSERT_EQ(hm.get("abdc"), "Value 10");
+    ASSERT_EQ(hm.get("acbd"), "");
+    ASSERT_EQ(hm.get("acdb"), "xyz123");
+    ASSERT_EQ(hm.get("adbc"), "abcdef");
+    ASSERT_EQ(hm.get("adcb"), "val");
+    ASSERT_EQ(hm.get("bacd"), "S");
+    ASSERT_EQ(hm.get("badc"), "");
+    ASSERT_EQ(hm.get("cabd"), "kks");
+    ASSERT_EQ(hm.get("cadb"), "asdfadfaf");
+    ASSERT_EQ(hm.get("dabc"), "122222");
+    ASSERT_EQ(hm.get("dacb"), "171");
+}
+
 int main(int argc, char *argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
