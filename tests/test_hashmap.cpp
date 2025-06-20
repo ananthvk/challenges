@@ -27,10 +27,10 @@ TEST(HashMapTest, InsertAndRetrieveValues)
     h.insert("C++", 198339);
     h.insert("XYZ", -88881);
     ASSERT_EQ(h.size(), 4);
-    ASSERT_EQ(h.find("Hello there"), 58);
-    ASSERT_EQ(h.find("Who are you?"), 31);
-    ASSERT_EQ(h.find("C++"), 198339);
-    ASSERT_EQ(h.find("XYZ"), -88881);
+    ASSERT_EQ(h.get("Hello there"), 58);
+    ASSERT_EQ(h.get("Who are you?"), 31);
+    ASSERT_EQ(h.get("C++"), 198339);
+    ASSERT_EQ(h.get("XYZ"), -88881);
     ASSERT_EQ(h.size(), 4);
 }
 
@@ -41,7 +41,7 @@ TEST(HashMapTest, LargeNumberOfValues)
         h.insert(i, static_cast<long long int>(i) * i);
     ASSERT_EQ(h.size(), 780000);
     for (int i = 0; i < 780000; i++)
-        ASSERT_EQ(h.find(i), static_cast<long long int>(i) * i);
+        ASSERT_EQ(h.get(i), static_cast<long long int>(i) * i);
 }
 
 TEST(HashMapTest, ElementsThatAreNotPresent)
@@ -49,9 +49,9 @@ TEST(HashMapTest, ElementsThatAreNotPresent)
     HashMap<std::string, int> h;
     h.insert("Hello there", 58);
     h.insert("Who are you?", 31);
-    ASSERT_EQ(h.find("SDFSDF"), std::nullopt);
-    ASSERT_EQ(h.find(""), std::nullopt);
-    ASSERT_EQ(h.find("Hello there "), std::nullopt);
+    ASSERT_EQ(h.get("SDFSDF"), std::nullopt);
+    ASSERT_EQ(h.get(""), std::nullopt);
+    ASSERT_EQ(h.get("Hello there "), std::nullopt);
 }
 
 TEST(HashMapTest, UpdateOperation)
@@ -62,22 +62,47 @@ TEST(HashMapTest, UpdateOperation)
     for (int i = 0; i < 5000; i++)
         h.insert(i, static_cast<long long int>(i) * i * i);
     for (int i = 0; i < 5000; i++)
-        ASSERT_EQ(h.find(i), static_cast<long long int>(i) * i * i);
-    
+        ASSERT_EQ(h.get(i), static_cast<long long int>(i) * i * i);
+
     HashMap<std::string, std::string> kv;
     kv.insert("Hello", "World");
     kv.insert("C+", "+");
     kv.insert("Empty", "");
-    ASSERT_EQ(kv.find("Hello"), "World");
-    ASSERT_EQ(kv.find("C+"), "+");
-    ASSERT_EQ(kv.find("Empty"), "");
+    ASSERT_EQ(kv.get("Hello"), "World");
+    ASSERT_EQ(kv.get("C+"), "+");
+    ASSERT_EQ(kv.get("Empty"), "");
 
     kv.insert("Hello", "World New");
     kv.insert("C+", "New +");
     kv.insert("Empty", "Not anymore");
-    ASSERT_EQ(kv.find("Hello"), "World New");
-    ASSERT_EQ(kv.find("C+"), "New +");
-    ASSERT_EQ(kv.find("Empty"), "Not anymore");
+    ASSERT_EQ(kv.get("Hello"), "World New");
+    ASSERT_EQ(kv.get("C+"), "New +");
+    ASSERT_EQ(kv.get("Empty"), "Not anymore");
+}
+
+TEST(HashMapTest, CountNumberOfStrings)
+{
+    const char *alphabets = "abcdefghijklmnopqrstuvwxyz";
+
+    // Get all two letter strings
+    HashMap<std::string, int> hm;
+    for (int i = 0; i < 26; i++)
+    {
+        for (int j = 0; j < 26; j++)
+        {
+            std::string s = {alphabets[i], alphabets[j]};
+            hm.insert(s, hm.get(s).value_or(0) + 1);
+        }
+    }
+    ASSERT_EQ(hm.size(), 26 * 26);
+    for (int i = 0; i < 26; i++)
+    {
+        for (int j = 0; j < 26; j++)
+        {
+            std::string s = {alphabets[i], alphabets[j]};
+            ASSERT_EQ(hm.get(s), 1);
+        }
+    }
 }
 
 int main(int argc, char *argv[])

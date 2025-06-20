@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <vector>
 
+// TODO: Later change the implementation to use a raw buffer + placement new
+//
 /*
  * HashMap
  * =========
@@ -13,7 +15,7 @@
  * Design choices
  * 1) No iterators - For simplicity and faster access, this implementation does not implement
  * iterators 2) Supports three main operations, along with three other operations
- *     * find(Key) - Returns an optional value
+ *     * get(Key) - Returns an optional value
  *     * insert(Key, Value) - Inserts the Key-Value pair into the hash table
  *     * erase(Key) - Deletes the key if it exists
  *     * contains(Key) - Returns true if the key exists
@@ -27,48 +29,64 @@ template <typename Key, typename Value, typename Hash = std::hash<Key>,
 class HashMap
 {
   private:
-    KeyEqual key_equal_;
-    Hash hasher_;
-    size_t sz, number_of_slots_used, number_of_slots_total;
-    float max_load_factor_, growth_factor_;
-
     struct Slot
     {
-        Key k;
-        Value v;
-        enum class State
+        enum class State : uint8_t
         {
             FILLED,
-            TOMBSTONE,
-            EMPTY
+            EMPTY,
+            TOMBSTONE
         };
-        State state = State::EMPTY;
+        Key key;
+        Value value;
+        State state;
+
+        Slot() : key(), value(), state(State::EMPTY) {}
     };
 
+    KeyEqual key_equal_;
+    Hash hasher_;
+    size_t size_, tombstones_;
+    double max_load_factor_, growth_factor_;
     std::vector<Slot> slots;
+
+    auto find_slot(std::vector<Slot> &table_slots, const Key &key) -> Slot &
+    {
+        uint64_t hash = hasher_(key);
+        uint64_t index = hash % table_slots.size();
+        while (true)
+        {
+            Slot &slot = table_slots[index];
+            if (key_equal_(slot.key, key) || slot.state == Slot::State::EMPTY)
+                return slot;
+            index = (index + 1) % table_slots.size();
+        }
+    }
 
     auto grow() -> void
     {
-        size_t new_size;
-        if (number_of_slots_total == 0)
-            new_size = DEFAULT_START_BUCKETS_SIZE;
-        else
-            new_size =
-                static_cast<size_t>(growth_factor_ * static_cast<float>(number_of_slots_total)) +
-                number_of_slots_total;
-
-        std::vector<Slot> new_slots(new_size);
-        // Move all elements from the old table to the new one
-        for (size_t i = 0; i < slots.size(); ++i)
+        auto new_size = size_ + 1;
+        if (new_size > static_cast<size_t>(static_cast<double>(slots.size()) * max_load_factor_))
         {
-            if (slots[i].state == Slot::State::FILLED)
+            auto new_capacity =
+                std::max(static_cast<size_t>(growth_factor_ * static_cast<double>(slots.size())),
+                         MIN_TABLE_SIZE);
+
+            // Rehash the elements
+            std::vector<Slot> new_slots(new_capacity);
+            for (size_t i = 0; i < slots.size(); ++i)
             {
-                auto new_index = hasher_(slots[i].k) % new_size;
-                new_slots[new_index] = slots[i];
+                if (slots[i].state == Slot::State::FILLED)
+                {
+                    Slot &destination = find_slot(new_slots, slots[i].key);
+                    destination.value = std::move(slots[i].value);
+                    destination.key = slots[i].key;
+                    destination.state = slots[i].state;
+                }
             }
+            // Move the vector
+            slots = std::move(new_slots);
         }
-        std::swap(slots, new_slots);
-        number_of_slots_total = new_size;
     }
 
   public:
@@ -78,103 +96,84 @@ class HashMap
     using difference_type = std::ptrdiff_t;
     using hasher = Hash;
     using key_equal = KeyEqual;
-    static constexpr float DEFAULT_MAX_LOAD_FACTOR = 0.7f;
-    static constexpr float DEFAULT_GROWTH_FACTOR = 1.0f;
-    static constexpr size_t DEFAULT_START_BUCKETS_SIZE = 8;
 
-    // using value_type = std::pair<const Key, Value>;
-    // using reference = value_type &;
-    // using const_reference = const value_type &;
+    static constexpr double DEFAULT_MAX_LOAD_FACTOR = 0.75;
+    static constexpr double DEFAULT_GROWTH_FACTOR = 2.0;
+    static constexpr size_t MIN_TABLE_SIZE = 8;
 
     HashMap()
-        : sz(0), number_of_slots_used(0), number_of_slots_total(0),
-          max_load_factor_(DEFAULT_MAX_LOAD_FACTOR), growth_factor_(DEFAULT_GROWTH_FACTOR)
+        : size_(0), tombstones_(0), max_load_factor_(DEFAULT_MAX_LOAD_FACTOR),
+          growth_factor_(DEFAULT_GROWTH_FACTOR)
     {
     }
 
-    auto find(const Key &key) -> std::optional<Value>
+    auto get(const Key &key) -> std::optional<Value>
     {
-        auto index = hasher_(key) % number_of_slots_total;
-        // TODO: Implement wrap around
-        while (index < number_of_slots_total)
+        if (!slots.size())
+            return std::nullopt;
+        Slot &slot = find_slot(slots, key);
+        if (slot.state == Slot::State::FILLED)
         {
-            if (slots[index].state == Slot::State::FILLED && slots[index].k == key)
-            {
-                return slots[index].v;
-            }
-            ++index;
+            return slot.value;
         }
         return std::nullopt;
     }
 
+    auto get_ref(const Key &key) -> Value &
+    {
+        Slot &slot = find_slot(slots, key);
+        return slot.value;
+    }
+
     auto insert(const Key &key, const Value &value) -> void
     {
-        if (number_of_slots_total == 0 || load_factor() >= max_load_factor())
-            grow();
+        grow();
 
-        // Perform linear probing until a free slot is found
-        size_t index = 0;
-        while (true)
+        Slot &slot = find_slot(slots, key);
+        if (slot.state == Slot::State::EMPTY)
         {
-            index = hasher_(key) % number_of_slots_total;
-            while (index < number_of_slots_total)
-            {
-                // Overwrite the value if there is an existing key
-                if (slots[index].state == Slot::State::FILLED && slots[index].k == key)
-                {
-                    slots[index].v = value;
-                    return;
-                }
-                if (slots[index].state == Slot::State::EMPTY)
-                    break;
-                ++index;
-            }
-            // TODO: Also wrap around and check
-            if (index >= number_of_slots_total)
-            {
-                // No free slot was found, grow the table and try again
-                grow();
-            }
-            else
-                break;
+            slot.key = key;
+            slot.value = value;
+            slot.state = Slot::State::FILLED;
+            size_ += 1;
         }
+        else
+        {
+            slot.value = value;
+        }
+    }
 
-        // We found an empty slot
-        slots[index].k = key;
-        slots[index].v = value;
-        slots[index].state = Slot::State::FILLED;
-        ++number_of_slots_used;
-        ++sz;
+    auto contains(const Key &key) const -> bool
+    {
+        Slot &slot = find_slot(slots, key);
+        return slot.state == Slot::State::FILLED;
     }
 
     auto erase(const Key &key) -> void {}
 
-    auto contains(const Key &key) const -> bool {}
-
-    auto size() const -> size_type { return sz; }
+    auto size() const -> size_type { return size_; }
 
     auto clear() -> void {}
 
-    auto load_factor() const -> float
+    auto load_factor() const -> double
     {
-        if (number_of_slots_total)
-            return static_cast<float>(number_of_slots_used) /
-                   static_cast<float>(number_of_slots_total);
-        return 0;
+        return slots.size()
+                   ? (static_cast<double>(size_ + tombstones_) / static_cast<double>(slots.size()))
+                   : 0;
     }
 
-    auto max_load_factor() const -> float { return max_load_factor_; }
+    auto max_load_factor() const -> double { return max_load_factor_; }
 
-    auto max_load_factor(float new_max_load_factor) -> void
+    auto max_load_factor(double new_max_load_factor) -> void
     {
         if (new_max_load_factor > 1.0f || new_max_load_factor < 0.0f)
             throw std::logic_error("Invalid Max load factor, it should be between 0 and 1");
         max_load_factor_ = new_max_load_factor;
     }
 
-    auto growth_factor() const -> float { return growth_factor_; }
+    auto growth_factor() const -> double { return growth_factor_; }
 
-    auto growth_factor(float new_growth_factor) -> void
+    auto growth_factor(double new_growth_factor) -> void
     {
         if (new_growth_factor > 1.0f)
             throw std::logic_error("Growth factor is greater than 1");
