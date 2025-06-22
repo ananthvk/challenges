@@ -54,18 +54,30 @@ class HashMap
     {
         uint64_t hash = hasher_(key);
         uint64_t index = hash % table_slots.size();
+        Slot *tombstone = nullptr;
+
         while (true)
         {
             Slot &slot = table_slots[index];
-            if (key_equal_(slot.key, key) || slot.state == Slot::State::EMPTY)
+            if (key_equal_(slot.key, key))
                 return slot;
+            if (slot.state == Slot::State::EMPTY)
+            {
+                // If there is no entry, return a tombstone that was found earlier (if any) in the
+                // probe sequence to reduce the number of tombstones
+                if (tombstone != nullptr)
+                    return *tombstone;
+                return slot;
+            }
+            if (slot.state == Slot::State::TOMBSTONE)
+                tombstone = &slot;
             index = (index + 1) % table_slots.size();
         }
     }
 
     auto grow() -> void
     {
-        auto new_size = size_ + 1;
+        auto new_size = size_ + 1 + tombstones_;
         if (new_size > static_cast<size_t>(static_cast<double>(slots.size()) * max_load_factor_))
         {
             auto new_capacity =
@@ -86,6 +98,7 @@ class HashMap
             }
             // Move the vector
             slots = std::move(new_slots);
+            tombstones_ = 0;
         }
     }
 
@@ -109,7 +122,7 @@ class HashMap
 
     auto get(const Key &key) -> std::optional<Value>
     {
-        if (!slots.size())
+        if (!size_)
             return std::nullopt;
         Slot &slot = find_slot(slots, key);
         if (slot.state == Slot::State::FILLED)
@@ -125,7 +138,10 @@ class HashMap
         return slot.value;
     }
 
-    auto insert(const Key &key, const Value &value) -> void
+    /**
+     * Returns true if a new key was inserted
+     */
+    auto insert(const Key &key, const Value &value) -> bool
     {
         grow();
 
@@ -136,10 +152,21 @@ class HashMap
             slot.value = value;
             slot.state = Slot::State::FILLED;
             size_ += 1;
+            return true;
+        }
+        else if (slot.state == Slot::State::TOMBSTONE)
+        {
+            slot.key = key;
+            slot.value = value;
+            slot.state = Slot::State::FILLED;
+            size_ += 1;
+            tombstones_ -= 1;
+            return true;
         }
         else
         {
             slot.value = value;
+            return false;
         }
     }
 
@@ -149,11 +176,32 @@ class HashMap
         return slot.state == Slot::State::FILLED;
     }
 
-    auto erase(const Key &key) -> void {}
+    auto erase(const Key &key) -> bool
+    {
+        if (size_ == 0)
+            return false;
+
+        Slot &slot = find_slot(slots, key);
+        if (slot.state != Slot::State::FILLED)
+            return false;
+
+        // Make the slot a tombstone
+        slot.state = Slot::State::TOMBSTONE;
+        ++tombstones_;
+        --size_;
+        // Note: Destructor of Key/Value are not called here, so for now use this table only with
+        // POD
+        return true;
+    }
 
     auto size() const -> size_type { return size_; }
 
-    auto clear() -> void {}
+    auto clear() -> void
+    {
+        size_ = 0;
+        tombstones_ = 0;
+        slots.clear();
+    }
 
     auto load_factor() const -> double
     {
