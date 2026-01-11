@@ -8,4 +8,5 @@ Includes solutions to challenges from:
 - [protohackers](https://protohackers.com/) 
 - [https://adventofcode.com/](https://adventofcode.com/) puzzles 
 - [https://cryptopals.com/](https://cryptopals.com/) challenges 
+- [CS50](https://cs50.harvard.edu/x/2021/weeks/0/)
 - K&R C Programming book
