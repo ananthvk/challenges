@@ -1,0 +1,45 @@
+Starting test....                                        				
+                                                                                       
+Above is a completely blank line | (should not get printed)                      			
+												
+Above line is completely tabs | (should not get printed)              				
+	 			              	         			         
+Above line is tabs + blanks				                 
+                            							           
+Above line is blank + tabs #2				                                                                                                                                                                   
+
+Simple tests		                                                                         
+==================                                              						                                                                                                                                   														
+
+
+
+
+
+There are 5 blank lines above, they should not be printed.                      									
+                    d
+                    			the quick brown fox jumps over the lazy dogs.
+          t              h                  e
+								(only tabs before this)
+t h e q u i c k b r o w n f o x j u m p s o v e r t h e l a z y d o g s
+==========
+                          t h e q u i c k b r o w n f o x j u m p s o v e r t h e l a z y d o g s
+==========
+A						B
+A                                               B
+A             			    	   	B
+You can fool all of the people some of the time, and some of the people all of the time, but you can't fool all of the people all of the time.
+====
+Above is a single line of text.
+
+
+
+
+
+
+
+
+
+
+(So many empty lines)
+                                                blanks at                    major                      buffer                   boundaries                					 			  				   			        (185)          (200).           										                                                                                                                                                                                          
+                                     t                                                                  d	                                                 

@@ -1,0 +1,1 @@
+    printf("(%d,%d,%d)\n", minWordLength, maxWordLength

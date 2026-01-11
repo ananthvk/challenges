@@ -1,0 +1,31 @@
+# These were the flags I used to compile these exercises
+# I have used these extra -Wno- options because I also added -Weverything
+
+# Command to run
+clang \
+    -ggdb3 \
+    -O0 \
+    -std=c11 \
+    -target x86_64-pc-windows-gnu \
+    -Wall \
+    -Wextra \
+    -Wshadow \
+    -Weverything \
+    -W \
+    -pedantic \
+    -Wconversion \
+    -Wsign-conversion \
+    -Wno-unused-variable \
+    -Wno-missing-variable-declarations \
+    -Wno-missing-prototypes \
+    -Wno-strict-prototypes \
+    -Wno-c++98-compat \
+    -Wno-c++98-compat-pedantic \
+    -Wno-c++98-c++11-compat-pedantic \
+    -Wno-switch-enum \
+    -Wno-documentation \
+    -Wno-error=padded \
+    -Wno-padded \
+    -Wno-declaration-after-statement \
+    hello.c \
+    -o hello

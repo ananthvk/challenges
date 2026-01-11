@@ -1,0 +1,10 @@
+no_debug
+no_show_errors
+no_display_prompt
+no_clear_screen
+no_show_stack
+set A = 3 2 4 + +
+set B = 1 2 3 4 5 6 sum clrtop
+set C = 5 6 7 8 9 10 prod clrtop
+C A B + *
+pop

@@ -1,0 +1,26 @@
+This line is less than 80 characters and must not get printed.
+This line is 79 characters long, which is less than 80 characters,so not print.
+This line is exactly 80 characters long, so this line must be printed on the sc.
+this is shorter than 30 lines
+This line is 81 characters long, which is one character bigger than the 80 chara.
+...
+This line is going to be extremely long and it is 100 characters long ... hmmm this is not going to.
+
+This line must split into multiple lines as this is exactly 160 characters long - thee quick brown fox jumps over the lazy dogs. No the fox did not jump to.
+a
+
+This line must split into multiple lines as this is exactly 176 characters long - thee quick brown fox jumps over the lazy dogs. No the fox did not jump over the lazy dogs.
+--  --  --   -
+Blank lines below.....
+
+
+
+Lines containing only spaces
+                                                                              
+                                                                               
+                                                                                
+                                                                                 
+                                                                                    
+                                        <--- spaces here
+
+                                             <Dont print>

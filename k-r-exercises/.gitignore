@@ -1,0 +1,8 @@
+samples/
+*.exe
+**/*.tmp
+*.o
+**/*.exe
+**/*.txt
+*.txt
+.vscode/
