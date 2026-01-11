@@ -1,0 +1,26 @@
+{
+    "args": [
+        "-W",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+        "-gdwarf-4",
+        "-O0",
+        "-fsanitize=integer,address,undefined,integer-divide-by-zero,shift,null,return,signed-integer-overflow,float-divide-by-zero,float-cast-overflow,bounds,alignment,vptr,leak",
+        "-pedantic",
+        "-Wno-sign-conversion",
+        "-Wno-sign-compare",
+        "-ftrapv"
+    ],
+    "command": "/usr/bin/clang++",
+    "info": {
+        "filename": "478B_RandomTeams",
+        "id": "478",
+        "index": "B",
+        "name": "Random Teams",
+        "url": "https://codeforces.com/contest/478/problem/B"
+    },
+    "lang": "C++",
+    "output_file": "478B_RandomTeams.bin",
+    "source_file": "478B_RandomTeams.cpp"
+}

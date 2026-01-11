@@ -4,6 +4,7 @@ Collection of my solutions to various programming challenges
 
 Includes solutions to challenges from:
 
+- [codeforces](https://codeforces.com)
 - [cses.fi](https://cses.fi) challengs
 - [protohackers](https://protohackers.com/) 
 - [https://adventofcode.com/](https://adventofcode.com/) puzzles 

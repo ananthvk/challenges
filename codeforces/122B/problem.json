@@ -1,0 +1,39 @@
+{
+    "args": [
+        "-W",
+        "-Wall",
+        "-Wformat=2",
+        "-Wfloat-equal",
+        "-Wlogical-op",
+        "-Wshift-overflow=2",
+        "-Wextra",
+        "-Wconversion",
+        "-Wsign-conversion",
+        "-Wcast-align",
+        "-pedantic",
+        "-gdwarf-4",
+        "-O2",
+        "-fsanitize=integer,address,undefined,integer-divide-by-zero,shift,null,return,signed-integer-overflow,float-divide-by-zero,float-cast-overflow,bounds,alignment,vptr,leak",
+        "-pedantic",
+        "-Wno-sign-compare",
+        "-ftrapv",
+        "-D_GLIBCXX_DEBUG",
+        "-D_GLIBCXX_DEBUG_PEDANTIC",
+        "-D_FORTIFY_SOURCE=2",
+        "-fstack-protector"
+    ],
+    "command": "/usr/bin/clang++",
+    "env": {
+        "ASAN_OPTIONS": "strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=1"
+    },
+    "info": {
+        "filename": "122B_LuckySubstring",
+        "id": "122",
+        "index": "B",
+        "name": "Lucky Substring",
+        "url": "https://codeforces.com/contest/122/problem/B"
+    },
+    "lang": "C++",
+    "output_file": "122B_LuckySubstring.bin",
+    "source_file": "122B_LuckySubstring.cpp"
+}

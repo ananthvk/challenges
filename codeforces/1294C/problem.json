@@ -1,0 +1,26 @@
+{
+    "args": [
+        "-W",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+        "-gdwarf-4",
+        "-O0",
+        "-fsanitize=integer,address,undefined,integer-divide-by-zero,shift,null,return,signed-integer-overflow,float-divide-by-zero,float-cast-overflow,bounds,alignment,vptr,leak",
+        "-pedantic",
+        "-Wno-sign-conversion",
+        "-Wno-sign-compare",
+        "-ftrapv"
+    ],
+    "command": "/usr/bin/clang++",
+    "info": {
+        "filename": "1294C_ProductofThreeNumbers",
+        "id": "1294",
+        "index": "C",
+        "name": "Product of Three Numbers",
+        "url": "https://codeforces.com/contest/1294/problem/C"
+    },
+    "lang": "C++",
+    "output_file": "1294C_ProductofThreeNumbers.bin",
+    "source_file": "1294C_ProductofThreeNumbers.cpp"
+}

@@ -1,0 +1,29 @@
+{
+    "args": [
+        "-W",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+        "-gdwarf-4",
+        "-O0",
+        "-fsanitize=integer,address,undefined,integer-divide-by-zero,shift,null,return,signed-integer-overflow,float-divide-by-zero,float-cast-overflow,bounds,alignment,vptr,leak",
+        "-pedantic",
+        "-Wno-sign-conversion",
+        "-Wno-sign-compare",
+        "-ftrapv"
+    ],
+    "command": "/usr/bin/clang++",
+    "env": {
+        "ASAN_OPTIONS": "strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=1"
+    },
+    "info": {
+        "filename": "1836A_Destroyer",
+        "id": "1836",
+        "index": "A",
+        "name": "Destroyer",
+        "url": "https://codeforces.com/contest/1836/problem/A"
+    },
+    "lang": "C++",
+    "output_file": "1836A_Destroyer.bin",
+    "source_file": "1836A_Destroyer.cpp"
+}
