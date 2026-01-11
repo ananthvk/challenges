@@ -1,0 +1,153 @@
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <queue>
+#include <stack>
+#include <vector>
+
+// The vertices are represented by numbers from [0,n), i.e. 0, 1, 2.... n-1
+class UndirectedGraph
+{
+    // a[i] is a vector which has all vertices adjacent to i
+    std::vector<std::vector<int>> adj;
+
+    void remove_single_edge(int u, int v)
+    {
+        // The vertex does not have any edge
+        if (adj[u].empty())
+        {
+            throw std::logic_error("Edge not present in graph");
+        }
+        auto iter = std::find(adj[u].begin(), adj[u].end(), v);
+        if (iter == adj[u].end())
+            throw std::logic_error("Edge not present in graph");
+
+        // Swap the vertex with the last vertex, then pop
+        if (adj[u].size() > 1)
+        {
+            std::swap(*iter, adj[u].back());
+        }
+        adj[u].pop_back();
+    }
+
+  public:
+    UndirectedGraph(int size) : adj(size) {}
+
+    // Add an edge to connect u and v
+    void add_edge(int u, int v)
+    {
+        if (u < 0 || u >= adj.size() || v < 0 || v >= adj.size())
+            throw std::out_of_range("Invalid vertex number");
+
+        // Don't care about parallel edges / self loop
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // Remove an edge u-v from the graph, if the edge is not present an exception is raised
+    void remove_edge(int u, int v)
+    {
+        if (u < 0 || u >= adj.size() || v < 0 || v >= adj.size())
+            throw std::out_of_range("Invalid vertex number");
+
+        remove_single_edge(u, v);
+        remove_single_edge(v, u);
+    }
+
+    // Returns all vertices adjacent to u
+    const std::vector<int> &adjacent(int u) const
+    {
+        if (u < 0 || u >= adj.size())
+            throw std::out_of_range("Invalid vertex number");
+
+        return adj[u];
+    }
+
+    void debug(int inc = 1) const
+    {
+        for (size_t i = 0; i < adj.size(); i++)
+        {
+            std::cout << (i + inc) << ": ";
+            for (const auto &e : adj[i])
+                std::cout << (e + inc) << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    int size() const { return static_cast<int>(adj.size()); }
+};
+
+// Color the graph, if a vertice is colored red, color it's adjacent vertices blue
+// If a vertice is already colored, and it is not equal to the new color, print IMPOSSIBLE
+
+bool bipartify(UndirectedGraph &g, int u, std::vector<bool> &visited, std::vector<int> &color)
+{
+    struct State
+    {
+        int vertice;
+        int current_color;
+    };
+
+    std::stack<State> stk;
+    // 1 - Red, 2 - Blue
+    stk.push({u, 1});
+
+    while (!stk.empty())
+    {
+        auto v = stk.top();
+        stk.pop();
+        if (visited[v.vertice])
+            continue;
+
+        if (color[v.vertice] != 0 && color[v.vertice] != v.current_color)
+        {
+            return false;
+        }
+        // std::cout << "Setting " << (v.vertice + 1) << " to " << v.current_color << std::endl;
+        color[v.vertice] = v.current_color;
+
+        visited[v.vertice] = true;
+
+        for (const auto &adj : g.adjacent(v.vertice))
+        {
+            // If any of the adjacent vertice is already visited and has the same color, return false
+            if(visited[adj] && color[adj] && v.current_color == color[adj])
+                return false;
+            // For all adjacent vertices, set the other color
+            stk.push({adj, (v.current_color == 1) ? 2 : 1});
+        }
+    }
+    
+
+    return true;
+}
+
+int main()
+{
+    int n, m;
+    std::cin >> n >> m;
+    UndirectedGraph g(n);
+    std::vector<bool> visited(g.size(), false);
+    std::vector<int> color(g.size(), 0);
+
+    for (int i = 0; i < m; i++)
+    {
+        int t1, t2;
+        std::cin >> t1 >> t2;
+        g.add_edge(t1 - 1, t2 - 1);
+    }
+    // Convert to bipartite set
+    for (int i = 0; i < n; i++)
+    {
+        if (!visited[i])
+        {
+            if (!bipartify(g, i, visited, color))
+            {
+                std::cout << "IMPOSSIBLE" << std::endl;
+                return 0;
+            }
+        }
+    }
+    std::copy(color.begin(), color.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+}
