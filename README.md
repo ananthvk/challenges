@@ -12,3 +12,4 @@ Includes solutions to challenges from:
 - [CS50](https://cs50.harvard.edu/x/2021/weeks/0/)
 - [Project Euler](https://projecteuler.net/)
 - K&R C Programming book
+- Implementation of various basic algorithms and datastructures (linked list, stacks, etc)
